@@ -1,4 +1,4 @@
-package com.guenbon.jochuckhub.dto;
+package com.guenbon.jochuckhub.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
