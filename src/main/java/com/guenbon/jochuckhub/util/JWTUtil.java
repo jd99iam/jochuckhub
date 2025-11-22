@@ -105,7 +105,8 @@ public class JWTUtil {
         return createToken(username, null, "refresh", REFRESH_TOKEN_EXPIRE_MS);
     }
 
-    public long getRefreshTokenExpireMs() {
-        return REFRESH_TOKEN_EXPIRE_MS;
+    public long getRefreshTokenExpireSeconds() {
+        return REFRESH_TOKEN_EXPIRE_MS / 1000;
     }
+
 }

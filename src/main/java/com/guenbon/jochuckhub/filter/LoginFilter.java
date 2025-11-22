@@ -82,16 +82,22 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // RCF 7235 정의에 따라서 Authorization 헤더를 넣을 때 "Authorization: 타입 인증토큰" 형태로 넣어야 한다.
         response.addHeader("Authorization", "Bearer " + accessToken);
-        response.addCookie(new Cookie("refreshToken", refreshToken));
 
-        // ⭐ Redis에 RefreshToken 저장
+        long refreshTokenExpireMs = jwtUtil.getRefreshTokenExpireSeconds();
+
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setPath("/");
+        cookie.setMaxAge((int) refreshTokenExpireMs);
+        response.addCookie(cookie);
+
+        // Redis에 RefreshToken 저장
         String key = "refresh:" + username;
 
         // redis에 refreshToken 저장
         redisTemplate.opsForValue().set(
                 "refresh:" + username,
                 refreshToken,
-                Duration.ofMillis(jwtUtil.getRefreshTokenExpireMs())
+                Duration.ofSeconds(refreshTokenExpireMs)
         );
     }
 
