@@ -91,11 +91,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addCookie(cookie);
 
         // Redis에 RefreshToken 저장
-        String key = "refresh:" + username;
+        String key = "refreshToken:" + username;
 
         // redis에 refreshToken 저장
         redisTemplate.opsForValue().set(
-                "refresh:" + username,
+                "refreshToken:" + username,
                 refreshToken,
                 Duration.ofSeconds(refreshTokenExpireMs)
         );

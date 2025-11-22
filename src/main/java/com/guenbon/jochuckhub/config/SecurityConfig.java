@@ -103,7 +103,12 @@ public class SecurityConfig {
                                 // MemberController
                                 .requestMatchers(HttpMethod.GET, "/members").hasRole(ADMIN.name())
                                 .requestMatchers("/members/**").permitAll()
-                                .anyRequest().authenticated());
+
+                                // AuthController
+                                .requestMatchers("/auth/**").hasRole(MEMBER.name())
+
+                                .anyRequest().authenticated()
+                );
 
         // 세션 stateless 설정
         http
