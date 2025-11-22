@@ -1,4 +1,4 @@
-package com.guenbon.jochuckhub.dto;
+package com.guenbon.jochuckhub.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
