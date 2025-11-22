@@ -29,5 +29,9 @@ public class Member {
 
     @Column(nullable = false)
     private Integer age;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.MEMBER;
 }
 

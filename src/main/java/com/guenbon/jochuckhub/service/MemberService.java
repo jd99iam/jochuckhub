@@ -1,12 +1,14 @@
 package com.guenbon.jochuckhub.service;
 
-import com.guenbon.jochuckhub.dto.MemberCreateDTO;
-import com.guenbon.jochuckhub.dto.MemberResponseDTO;
-import com.guenbon.jochuckhub.dto.MemberUpdateDTO;
+import com.guenbon.jochuckhub.dto.request.MemberCreateDTO;
+import com.guenbon.jochuckhub.dto.request.MemberUpdateDTO;
+import com.guenbon.jochuckhub.dto.response.MemberResponseDTO;
 import com.guenbon.jochuckhub.entity.Member;
-import com.guenbon.jochuckhub.exception.MemberNotFoundException;
+import com.guenbon.jochuckhub.exception.NotFoundException;
+import com.guenbon.jochuckhub.exception.errorcode.ErrorCode;
 import com.guenbon.jochuckhub.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class MemberService {
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final MemberRepository memberRepository;
 
     // Create
@@ -27,8 +30,12 @@ public class MemberService {
         Member member = new Member();
         member.setUsername(createDTO.getUsername());
         member.setName(createDTO.getName());
-        member.setPassword(createDTO.getPassword());
+        member.setPassword(bCryptPasswordEncoder.encode(createDTO.getPassword()));
         member.setAge(createDTO.getAge());
+
+        if (memberRepository.findByUsername(member.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
 
         Member savedMember = memberRepository.save(member);
         return convertToResponseDTO(savedMember);
@@ -45,7 +52,7 @@ public class MemberService {
     public MemberResponseDTO getMemberById(Long id) {
         return memberRepository.findById(id)
                 .map(this::convertToResponseDTO)
-                .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     // Read - Username으로 조회
@@ -58,7 +65,7 @@ public class MemberService {
     @Transactional
     public MemberResponseDTO updateMember(Long id, MemberUpdateDTO updateDTO) {
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new MemberNotFoundException("Member not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
         if (updateDTO.getUsername() != null) {
             member.setUsername(updateDTO.getUsername());
@@ -81,7 +88,7 @@ public class MemberService {
     @Transactional
     public void deleteMember(Long id) {
         if (!memberRepository.existsById(id)) {
-            throw new MemberNotFoundException("Member not found with id: " + id);
+            throw new NotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }
         memberRepository.deleteById(id);
     }
