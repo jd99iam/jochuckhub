@@ -33,5 +33,8 @@ public class Member {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role = Role.MEMBER;
+
+    @Column(nullable = true)
+    private String profileImageUrl;
 }
 

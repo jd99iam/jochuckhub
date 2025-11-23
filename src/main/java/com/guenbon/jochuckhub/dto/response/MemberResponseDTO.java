@@ -1,5 +1,6 @@
 package com.guenbon.jochuckhub.dto.response;
 
+import com.guenbon.jochuckhub.entity.Member;
 import com.guenbon.jochuckhub.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,5 +17,18 @@ public class MemberResponseDTO {
     private String name;
     private Integer age;
     private Role role;
+    private String profileImageUrl;
+
+    public static MemberResponseDTO of(Member member) {
+        MemberResponseDTO responseDTO = new MemberResponseDTO();
+        responseDTO.setId(member.getId());
+        responseDTO.setUsername(member.getUsername());
+        responseDTO.setName(member.getName());
+        responseDTO.setAge(member.getAge());
+        responseDTO.setRole(member.getRole());
+        responseDTO.setProfileImageUrl(member.getProfileImageUrl());
+
+        return responseDTO;
+    }
 }
 

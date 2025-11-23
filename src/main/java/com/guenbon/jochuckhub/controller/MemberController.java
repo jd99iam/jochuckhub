@@ -7,9 +7,12 @@ import com.guenbon.jochuckhub.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -19,10 +22,13 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    // 회원가입, 모든 권한
-    @PostMapping
-    public ResponseEntity<MemberResponseDTO> createMember(@Valid @RequestBody MemberCreateDTO createDTO) {
-        MemberResponseDTO createdMember = memberService.createMember(createDTO);
+    // 회원가입 , 모든 권한
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MemberResponseDTO> createMember(
+            @RequestPart("data") @Valid MemberCreateDTO createDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) throws IOException {
+        MemberResponseDTO createdMember = memberService.createMember(createDTO, image);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMember);
     }
 
