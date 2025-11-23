@@ -5,22 +5,25 @@
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
     <property name="LOG_HOME" value="logs"/>
 
-    <!-- 콘솔 로그 출력 -->
+    <!-- ========================================= -->
+    <!-- Console -->
+    <!-- ========================================= -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
+
     <!-- ========================================= -->
-    <!-- 1. 공통 ROOT 로그 (전체 서비스 흐름 / 에러) -->
+    <!-- ROOT 로그 (모든 로그 수집) -->
     <!-- ========================================= -->
     <appender name="ROOT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/root.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/root.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory> <!-- 30일 보관 -->
+            <maxHistory>30</maxHistory>
         </rollingPolicy>
 
         <encoder>
@@ -30,7 +33,7 @@
 
 
     <!-- ========================================= -->
-    <!-- 2. 비즈니스 로그 -->
+    <!-- 1) BUSINESS LOG -->
     <!-- ========================================= -->
     <appender name="BIZ_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/biz.log</file>
@@ -45,20 +48,20 @@
         </encoder>
     </appender>
 
-    <logger name="BIZ" level="INFO" additivity="false">
+    <logger name="BIZ" level="INFO" additivity="true">
         <appender-ref ref="BIZ_FILE"/>
     </logger>
 
 
     <!-- ========================================= -->
-    <!-- 3. 보안 로그 (인증/인가/IP) -->
+    <!-- 2) SECURITY LOG -->
     <!-- ========================================= -->
     <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/security.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/security.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>90</maxHistory> <!-- 보안 로그는 오래 보관 -->
+            <maxHistory>90</maxHistory>
         </rollingPolicy>
 
         <encoder>
@@ -66,13 +69,13 @@
         </encoder>
     </appender>
 
-    <logger name="SECURITY" level="WARN" additivity="false">
+    <logger name="SECURITY" level="WARN" additivity="true">
         <appender-ref ref="SECURITY_FILE"/>
     </logger>
 
 
     <!-- ========================================= -->
-    <!-- 4. 외부 API 호출 로그 -->
+    <!-- 3) EXTERNAL LOG -->
     <!-- ========================================= -->
     <appender name="EXTERNAL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/external.log</file>
@@ -87,18 +90,17 @@
         </encoder>
     </appender>
 
-    <logger name="EXTERNAL" level="INFO" additivity="false">
+    <logger name="EXTERNAL" level="INFO" additivity="true">
         <appender-ref ref="EXTERNAL_FILE"/>
     </logger>
 
 
     <!-- ========================================= -->
-    <!-- ROOT Logger: 모든 로그 출력 -->
+    <!-- ROOT LOGGER - 모든 로거의 로그 출력 -->
     <!-- ========================================= -->
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ROOT_FILE"/>
     </root>
-
 
 </configuration>
