@@ -56,9 +56,10 @@ public class MemberService {
     }
 
     // Read - Username으로 조회
-    public Optional<MemberResponseDTO> getMemberByUsername(String username) {
+    public MemberResponseDTO getMemberByUsername(String username) {
         return memberRepository.findByUsername(username)
-                .map(this::convertToResponseDTO);
+                .map(this::convertToResponseDTO)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     // Update
@@ -100,6 +101,7 @@ public class MemberService {
         responseDTO.setUsername(member.getUsername());
         responseDTO.setName(member.getName());
         responseDTO.setAge(member.getAge());
+        responseDTO.setRole(member.getRole());
         return responseDTO;
     }
 }

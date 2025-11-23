@@ -1,7 +1,9 @@
 package com.guenbon.jochuckhub.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import com.guenbon.jochuckhub.exception.JWTException;
+import com.guenbon.jochuckhub.exception.errorcode.ErrorCode;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,11 +36,28 @@ public class JWTUtil {
     // Claims 파싱 공통 메서드
     // ======================
     private Claims parseClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+
+        try {
+            return Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            throw new JWTException(ErrorCode.EXPIRED_TOKEN);
+
+        } catch (SignatureException e) {
+            throw new JWTException(ErrorCode.INVALID_SIGNATURE);
+
+        } catch (MalformedJwtException e) {
+            throw new JWTException(ErrorCode.MALFORMED_TOKEN);
+
+        } catch (UnsupportedJwtException e) {
+            throw new JWTException(ErrorCode.UNSUPPORTED_TOKEN);
+
+        } catch (IllegalArgumentException e) {
+            throw new JWTException(ErrorCode.TOKEN_NOT_FOUND);
+        }
     }
 
     // ======================

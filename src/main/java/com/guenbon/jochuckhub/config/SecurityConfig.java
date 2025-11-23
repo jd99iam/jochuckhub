@@ -1,5 +1,6 @@
 package com.guenbon.jochuckhub.config;
 
+import com.guenbon.jochuckhub.exception.CustomAuthenticationEntryPoint;
 import com.guenbon.jochuckhub.filter.JWTFilter;
 import com.guenbon.jochuckhub.filter.LoginFilter;
 import com.guenbon.jochuckhub.util.JWTUtil;
@@ -36,6 +37,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     // AuthenticationConfiguration 생성자 주입받기
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     // 해시 암호화를 위한 빈 등록
     @Bean
@@ -93,7 +95,7 @@ public class SecurityConfig {
 
         // JWT 검증 필터 등록
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, customAuthenticationEntryPoint), LoginFilter.class);
 
 
         // 인증 필요한 경로 설정
@@ -105,10 +107,16 @@ public class SecurityConfig {
                                 .requestMatchers("/members/**").permitAll()
 
                                 // AuthController
+                                .requestMatchers("/auth/login").permitAll()
                                 .requestMatchers("/auth/**").hasRole(MEMBER.name())
 
                                 .anyRequest().authenticated()
                 );
+
+        // 인증 실패(인증 없음) 처리
+        http.exceptionHandling(exception ->
+                exception.authenticationEntryPoint(customAuthenticationEntryPoint)
+        );
 
         // 세션 stateless 설정
         http

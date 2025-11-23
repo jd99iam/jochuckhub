@@ -47,9 +47,18 @@ public class AuthController {
      * @return
      */
     @PostMapping("/reissue")
-    public ResponseEntity<?> reissue(@CookieValue(name = "refreshToken") String refreshToken) {
+    public ResponseEntity<?> reissue(@CookieValue(name = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
         JWTReissueDTO jwtReissueDTO = authService.reissue(refreshToken);
+        response.setHeader("Authorization", "Bearer " + jwtReissueDTO.getAccessToken());
 
+        Cookie cookie = new Cookie("refreshToken", jwtReissueDTO.getRefreshToken());
+        cookie.setPath("/");
+        cookie.setMaxAge(jwtReissueDTO.getRefreshTokenExpiresInSeconds());
+        cookie.setHttpOnly(true);
+        // cookie.setSecure(true);
 
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().build();
     }
 }

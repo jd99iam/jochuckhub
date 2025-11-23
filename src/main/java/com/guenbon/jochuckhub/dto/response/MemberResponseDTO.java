@@ -1,5 +1,6 @@
 package com.guenbon.jochuckhub.dto.response;
 
+import com.guenbon.jochuckhub.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,5 +15,6 @@ public class MemberResponseDTO {
     private String username;
     private String name;
     private Integer age;
+    private Role role;
 }
 

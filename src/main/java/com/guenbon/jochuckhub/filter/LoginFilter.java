@@ -89,6 +89,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         cookie.setPath("/");
         cookie.setMaxAge((int) refreshTokenExpireMs);
         response.addCookie(cookie);
+        cookie.setHttpOnly(true);
+        // cookie.setSecure(true);
 
         // Redis에 RefreshToken 저장
         String key = "refreshToken:" + username;
