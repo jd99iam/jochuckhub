@@ -12,7 +12,6 @@ import com.guenbon.jochuckhub.exception.errorcode.ErrorCode;
 import com.guenbon.jochuckhub.repository.MemberRepository;
 import com.guenbon.jochuckhub.repository.MemberTeamRepository;
 import com.guenbon.jochuckhub.repository.TeamRepository;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -72,22 +71,12 @@ public class TeamService {
         return teamResponseDTO;
     }
 
-    @CircuitBreaker(name = "redisCacheBreaker", fallbackMethod = "getCachedTeamFallback")
-    public String getCachedTeam(String redisKey) {
-        return redisManager.get(redisKey);
-    }
-
-    public String getCachedTeamFallback(String redisKey, Throwable t) {
-        log.error("Redis 조회 실패 → fallback 실행(key={}, cause={})", redisKey, t.getMessage());
-        return null;
-    }
-
     public TeamResponseDTO findTeamById(Long teamId) {
 
         String redisKey = "team:" + teamId;
 
         // Redis 조회
-        String cachedTeam = getCachedTeam(redisKey);
+        String cachedTeam = redisManager.get(redisKey);
 
         if (cachedTeam != null) {
             try {

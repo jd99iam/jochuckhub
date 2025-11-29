@@ -1,5 +1,7 @@
 package com.guenbon.jochuckhub.service;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.lettuce.core.RedisConnectionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -15,13 +17,21 @@ public class RedisManager {
     private final StringRedisTemplate redisTemplate;
 
     // 조회
+    @CircuitBreaker(name = "redisCacheBreaker", fallbackMethod = "fallback")
     public String get(String key) {
-        try {
-            return redisTemplate.opsForValue().get(key);
-        } catch (Exception e) {
-            log.error("Redis GET 실패 (key={}, cause={})", key, e.getMessage());
-            return null;  // 명시적으로 실패 시 null 반환
-        }
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    public String fallback(String key, RedisConnectionException e) {
+        log.error("[Fallback: RedisConnectionException] key={}, message={}",
+                key, e.getMessage());
+        return null;
+    }
+
+    public String fallback(String key, Throwable t) {
+        log.error("[Fallback: General Throwable] key={}, message={}",
+                key, t.getMessage());
+        return null;
     }
 
     // 저장 + TTL
