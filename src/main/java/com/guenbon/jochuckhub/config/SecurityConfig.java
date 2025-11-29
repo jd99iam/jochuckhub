@@ -3,11 +3,11 @@ package com.guenbon.jochuckhub.config;
 import com.guenbon.jochuckhub.exception.CustomAuthenticationEntryPoint;
 import com.guenbon.jochuckhub.filter.JWTFilter;
 import com.guenbon.jochuckhub.filter.LoginFilter;
+import com.guenbon.jochuckhub.service.RedisManager;
 import com.guenbon.jochuckhub.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
@@ -33,7 +33,7 @@ import static com.guenbon.jochuckhub.entity.Role.*;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final StringRedisTemplate redisTemplate;
+    private final RedisManager redisManager;
     private final JWTUtil jwtUtil;
     // AuthenticationConfiguration 생성자 주입받기
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -91,7 +91,7 @@ public class SecurityConfig {
         // 필터 등록 (LoginFilter를 원래 UsernamePasswordAuthenticationFilter 의 위치에 등록)
         // 외에도 addFilterBefore, After 등 메서드가 있다.
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisTemplate), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisManager), UsernamePasswordAuthenticationFilter.class);
 
         // JWT 검증 필터 등록
         http

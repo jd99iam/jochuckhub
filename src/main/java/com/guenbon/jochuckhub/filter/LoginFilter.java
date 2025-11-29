@@ -3,6 +3,7 @@ package com.guenbon.jochuckhub.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.jochuckhub.dto.CustomUserDetails;
 import com.guenbon.jochuckhub.dto.request.LoginDTO;
+import com.guenbon.jochuckhub.service.RedisManager;
 import com.guenbon.jochuckhub.util.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -31,12 +32,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
-    private final StringRedisTemplate redisTemplate;
+    private final RedisManager redisManager;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, StringRedisTemplate stringRedisTemplate) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RedisManager redisManager) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
-        this.redisTemplate = stringRedisTemplate;
+        this.redisManager = redisManager;
 
         setFilterProcessesUrl("/auth/login");
     }
@@ -83,11 +84,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // RCF 7235 정의에 따라서 Authorization 헤더를 넣을 때 "Authorization: 타입 인증토큰" 형태로 넣어야 한다.
         response.addHeader("Authorization", "Bearer " + accessToken);
 
-        long refreshTokenExpireMs = jwtUtil.getRefreshTokenExpireSeconds();
+        long refreshTokenExpireSeconds = jwtUtil.getRefreshTokenExpireSeconds();
 
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setPath("/");
-        cookie.setMaxAge((int) refreshTokenExpireMs);
+        cookie.setMaxAge((int) refreshTokenExpireSeconds);
         response.addCookie(cookie);
         cookie.setHttpOnly(true);
         // cookie.setSecure(true);
@@ -96,10 +97,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String key = "refreshToken:" + username;
 
         // redis에 refreshToken 저장
-        redisTemplate.opsForValue().set(
+        redisManager.set(
                 "refreshToken:" + username,
                 refreshToken,
-                Duration.ofSeconds(refreshTokenExpireMs)
+                refreshTokenExpireSeconds
         );
     }
 

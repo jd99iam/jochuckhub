@@ -12,9 +12,9 @@ import com.guenbon.jochuckhub.exception.errorcode.ErrorCode;
 import com.guenbon.jochuckhub.repository.MemberRepository;
 import com.guenbon.jochuckhub.repository.MemberTeamRepository;
 import com.guenbon.jochuckhub.repository.TeamRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
@@ -36,7 +35,7 @@ public class TeamService {
     private final TeamRepository teamRepository;
     private final MemberRepository memberRepository;
     private final MemberTeamRepository memberTeamRepository;
-    private final StringRedisTemplate redisTemplate;
+    private final RedisManager redisManager;
     private final ObjectMapper objectMapper; // ObjectMapper 주입
 
     @Transactional
@@ -73,35 +72,47 @@ public class TeamService {
         return teamResponseDTO;
     }
 
+    @CircuitBreaker(name = "redisCacheBreaker", fallbackMethod = "getCachedTeamFallback")
+    public String getCachedTeam(String redisKey) {
+        return redisManager.get(redisKey);
+    }
+
+    public String getCachedTeamFallback(String redisKey, Throwable t) {
+        log.error("Redis 조회 실패 → fallback 실행(key={}, cause={})", redisKey, t.getMessage());
+        return null;
+    }
+
     public TeamResponseDTO findTeamById(Long teamId) {
+
         String redisKey = "team:" + teamId;
-        String cachedTeam = redisTemplate.opsForValue().get(redisKey);
+
+        // Redis 조회
+        String cachedTeam = getCachedTeam(redisKey);
 
         if (cachedTeam != null) {
             try {
-                log.info("팀 조회 cache hit : {}", teamId);
+                log.info("team cache hit : {}", teamId);
                 return objectMapper.readValue(cachedTeam, TeamResponseDTO.class);
             } catch (JsonProcessingException e) {
-                // 로깅 또는 예외 처리
-                e.printStackTrace();
+                log.error("캐시 역직렬화 실패: {}", e.getMessage());
             }
         }
 
+        // DB 조회
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.TEAM_NOT_FOUND));
 
-        TeamResponseDTO teamResponseDTO = buildTeamResponseDTO(team);
+        TeamResponseDTO dto = buildTeamResponseDTO(team);
 
-        // Redis에 캐싱 (예: 1시간 유효)
+        // Redis 저장
         try {
-            String teamResponseJson = objectMapper.writeValueAsString(teamResponseDTO);
-            redisTemplate.opsForValue().set(redisKey, teamResponseJson, 1, TimeUnit.HOURS);
+            String json = objectMapper.writeValueAsString(dto);
+            redisManager.set(redisKey, json, 3600); // 1시간 TTL
         } catch (JsonProcessingException e) {
-            // 로깅 또는 예외 처리
-            e.printStackTrace();
+            log.error("Redis 캐싱 실패: {}", e.getMessage());
         }
 
-        return teamResponseDTO;
+        return dto;
     }
 
     private TeamResponseDTO buildTeamResponseDTO(Team team) {

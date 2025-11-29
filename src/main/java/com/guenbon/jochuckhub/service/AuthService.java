@@ -6,17 +6,14 @@ import com.guenbon.jochuckhub.exception.JWTException;
 import com.guenbon.jochuckhub.exception.errorcode.ErrorCode;
 import com.guenbon.jochuckhub.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
 
 @RequiredArgsConstructor
 @Service
 public class AuthService {
 
-    private final StringRedisTemplate redisTemplate;
+    private final RedisManager redisManager;
     private final JWTUtil jwtUtil;
     private final MemberService memberService;
 
@@ -28,7 +25,7 @@ public class AuthService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
         String key = "refreshToken:" + username;
-        redisTemplate.delete(key);
+        redisManager.delete(key);
     }
 
     public JWTReissueDTO reissue(String refreshToken) {
@@ -42,7 +39,7 @@ public class AuthService {
 
         // 2) redis에 저장된 refreshToken 가져오기
         String key = "refreshToken:" + username;
-        String cachedRefreshToken = redisTemplate.opsForValue().get(key);
+        String cachedRefreshToken = redisManager.get(key);
 
         if (cachedRefreshToken == null) {
             throw new JWTException(ErrorCode.TOKEN_NOT_FOUND);
@@ -65,11 +62,7 @@ public class AuthService {
         // 5) 새 refreshToken으로 Redis 값 교체 + TTL 갱신
         long refreshTokenExpireSeconds = jwtUtil.getRefreshTokenExpireSeconds();
 
-        redisTemplate.opsForValue().set(
-                key,
-                reissuedRefreshToken,
-                Duration.ofSeconds(refreshTokenExpireSeconds)
-        );
+        redisManager.set(key, reissuedRefreshToken, refreshTokenExpireSeconds);
 
         // 6) 결과 반환
         return new JWTReissueDTO(
