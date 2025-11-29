@@ -1,7 +1,6 @@
 package com.guenbon.jochuckhub.controller;
 
 import com.guenbon.jochuckhub.dto.response.TeamResponseDTO;
-import com.guenbon.jochuckhub.entity.Team;
 import com.guenbon.jochuckhub.service.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

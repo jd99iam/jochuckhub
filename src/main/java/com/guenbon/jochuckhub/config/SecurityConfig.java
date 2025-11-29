@@ -110,6 +110,10 @@ public class SecurityConfig {
                                 .requestMatchers("/auth/login").permitAll()
                                 .requestMatchers("/auth/**").hasRole(MEMBER.name())
 
+                                // TeamController
+                                .requestMatchers(HttpMethod.POST, "/teams").authenticated()
+                                .requestMatchers("/teams/**").permitAll()
+
                                 .anyRequest().authenticated()
                 );
 
