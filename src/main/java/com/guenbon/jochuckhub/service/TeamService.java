@@ -78,4 +78,28 @@ public class TeamService {
                 .members(members)
                 .build();
     }
+
+    public TeamResponseDTO findTeamById(Long teamId) {
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.TEAM_NOT_FOUND)); // 적절한 예외 처리 필요
+
+        List<TeamResponseDTO.TeamMemberDTO> members = team.getMemberTeams().stream()
+                .map(mt -> TeamResponseDTO.TeamMemberDTO.builder()
+                        .memberId(mt.getMember().getId())
+                        .username(mt.getMember().getUsername())
+                        .role(mt.getRole())
+                        .build())
+                .sorted(Comparator.comparing(dto -> {
+                    if (dto.getRole() == TeamRole.MANAGER) return 0;
+                    if (dto.getRole() == TeamRole.COACH) return 1;
+                    if (dto.getRole() == TeamRole.PLAYER) return 2;
+                    return 3;
+                }))
+                .collect(Collectors.toList());
+
+        return TeamResponseDTO.builder()
+                .teamName(team.getName())
+                .members(members)
+                .build();
+    }
 }
