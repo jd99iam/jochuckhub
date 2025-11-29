@@ -1,0 +1,81 @@
+package com.guenbon.jochuckhub.service;
+
+import com.guenbon.jochuckhub.dto.response.TeamResponseDTO;
+import com.guenbon.jochuckhub.entity.Member;
+import com.guenbon.jochuckhub.entity.MemberTeam;
+import com.guenbon.jochuckhub.entity.Team;
+import com.guenbon.jochuckhub.entity.TeamRole;
+import com.guenbon.jochuckhub.exception.NotFoundException;
+import com.guenbon.jochuckhub.exception.errorcode.ErrorCode;
+import com.guenbon.jochuckhub.repository.MemberRepository;
+import com.guenbon.jochuckhub.repository.MemberTeamRepository;
+import com.guenbon.jochuckhub.repository.TeamRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class TeamService {
+
+    private final TeamRepository teamRepository;
+    private final MemberRepository memberRepository;
+    private final MemberTeamRepository memberTeamRepository;
+
+    @Transactional
+    public TeamResponseDTO createTeam(String teamName) {
+        // 현재 로그인한 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        // 사용자 엔티티 찾기
+        Optional<Member> optionalMember = memberRepository.findByUsername(username);
+        if (optionalMember.isEmpty()) {
+            throw new RuntimeException("로그인된 사용자를 찾을 수 없습니다."); // 적절한 예외 처리 필요
+        }
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+
+        // Team 생성
+        Team team = new Team();
+        team.setName(teamName);
+        Team savedTeam = teamRepository.save(team);
+
+        // MemberTeam 관계 설정 (현재 사용자를 MANAGER로)
+        MemberTeam memberTeam = new MemberTeam();
+        memberTeam.setMember(member);
+        memberTeam.setTeam(savedTeam);
+        memberTeam.setRole(TeamRole.MANAGER);
+        memberTeamRepository.save(memberTeam);
+
+        // TeamResponseDTO 생성 및 반환
+        List<TeamResponseDTO.TeamMemberDTO> members = savedTeam.getMemberTeams().stream()
+                .map(mt -> TeamResponseDTO.TeamMemberDTO.builder()
+                        .memberId(mt.getMember().getId())
+                        .username(mt.getMember().getUsername())
+                        .role(mt.getRole())
+                        .build())
+                .sorted(Comparator.comparing(dto -> {
+                    if (dto.getRole() == TeamRole.MANAGER) return 0;
+                    if (dto.getRole() == TeamRole.COACH) return 1;
+                    if (dto.getRole() == TeamRole.PLAYER) return 2;
+                    return 3;
+                }))
+                .collect(Collectors.toList());
+
+        return TeamResponseDTO.builder()
+                .teamName(savedTeam.getName())
+                .members(members)
+                .build();
+    }
+}
