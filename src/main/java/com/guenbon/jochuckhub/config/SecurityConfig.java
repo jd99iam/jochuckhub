@@ -102,6 +102,9 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth ->
                         auth
+                                // health check
+                                .requestMatchers("/api/actuator/health").permitAll()
+
                                 // MemberController
                                 .requestMatchers(HttpMethod.GET, "/members").hasRole(ADMIN.name())
                                 .requestMatchers("/members/**").permitAll()

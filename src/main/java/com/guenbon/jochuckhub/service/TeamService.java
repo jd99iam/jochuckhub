@@ -96,7 +96,7 @@ public class TeamService {
         // Redis 저장
         try {
             String json = objectMapper.writeValueAsString(dto);
-            redisManager.set(redisKey, json, 3600); // 1시간 TTL
+            redisManager.set(redisKey, json, 3600 * 1000); // 1시간 TTL
         } catch (JsonProcessingException e) {
             log.error("Redis 캐싱 실패: {}", e.getMessage());
         }

@@ -19,6 +19,7 @@ public class RedisManager {
     // 조회
     @CircuitBreaker(name = "redisCacheBreaker", fallbackMethod = "fallback")
     public String get(String key) {
+        log.info("원본 메서드 get 호출");
         return redisTemplate.opsForValue().get(key);
     }
 
