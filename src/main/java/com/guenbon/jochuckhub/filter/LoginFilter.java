@@ -3,7 +3,7 @@ package com.guenbon.jochuckhub.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guenbon.jochuckhub.dto.CustomUserDetails;
 import com.guenbon.jochuckhub.dto.request.LoginDTO;
-import com.guenbon.jochuckhub.service.RedisManager;
+import com.guenbon.jochuckhub.service.redis.RedisManager;
 import com.guenbon.jochuckhub.util.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,7 +21,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.time.Duration;
 
 // 로그인 할 때 정상 로그인 정보인지 확인하는 필터
 @Slf4j

@@ -1,8 +1,6 @@
-package com.guenbon.jochuckhub.service;
+package com.guenbon.jochuckhub.service.redis;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.lettuce.core.RedisCommandExecutionException;
-import io.lettuce.core.RedisConnectionException;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -10,32 +8,23 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
+// Retry 만 사용
 @Slf4j
-@Component
 @RequiredArgsConstructor
-public class RedisManager {
-
+//@Primary
+@Component
+public class RedisManagerV2 implements RedisManager {
     private final StringRedisTemplate redisTemplate;
 
     // 조회
-    @CircuitBreaker(name = "redisCacheBreaker", fallbackMethod = "fallback")
+    @Retry(name = "redisRetry", fallbackMethod = "fallback")
     public String get(String key) {
         log.info("[원본 메서드] : get 호출");
         return redisTemplate.opsForValue().get(key);
     }
 
-    public String fallback(String key, RedisConnectionException e) {
-        log.error("[FALLBACK] : RedisConnectionException : {}", e.getMessage());
-        return null;
-    }
-
-    public String fallback(String key, RedisCommandExecutionException e) {
-        log.error("[FALLBACK] : RedisCommandExecutionException : {}", e.getMessage());
-        return null;
-    }
-
     public String fallback(String key, Exception e) {
-        log.error("[FALLBACK] : RuntimeException : {}", e.getMessage());
+        log.error("[FALLBACK] : retry failed : {}", e.getMessage());
         return null;
     }
 

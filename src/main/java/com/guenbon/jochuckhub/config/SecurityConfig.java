@@ -3,7 +3,7 @@ package com.guenbon.jochuckhub.config;
 import com.guenbon.jochuckhub.exception.CustomAuthenticationEntryPoint;
 import com.guenbon.jochuckhub.filter.JWTFilter;
 import com.guenbon.jochuckhub.filter.LoginFilter;
-import com.guenbon.jochuckhub.service.RedisManager;
+import com.guenbon.jochuckhub.service.redis.RedisManager;
 import com.guenbon.jochuckhub.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

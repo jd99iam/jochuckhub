@@ -12,6 +12,7 @@ import com.guenbon.jochuckhub.exception.errorcode.ErrorCode;
 import com.guenbon.jochuckhub.repository.MemberRepository;
 import com.guenbon.jochuckhub.repository.MemberTeamRepository;
 import com.guenbon.jochuckhub.repository.TeamRepository;
+import com.guenbon.jochuckhub.service.redis.RedisManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;

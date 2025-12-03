@@ -4,6 +4,7 @@ import com.guenbon.jochuckhub.dto.JWTReissueDTO;
 import com.guenbon.jochuckhub.dto.response.MemberResponseDTO;
 import com.guenbon.jochuckhub.exception.JWTException;
 import com.guenbon.jochuckhub.exception.errorcode.ErrorCode;
+import com.guenbon.jochuckhub.service.redis.RedisManager;
 import com.guenbon.jochuckhub.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
