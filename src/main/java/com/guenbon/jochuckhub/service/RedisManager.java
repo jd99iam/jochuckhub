@@ -1,6 +1,7 @@
 package com.guenbon.jochuckhub.service;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.lettuce.core.RedisCommandExecutionException;
 import io.lettuce.core.RedisConnectionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,19 +20,22 @@ public class RedisManager {
     // 조회
     @CircuitBreaker(name = "redisCacheBreaker", fallbackMethod = "fallback")
     public String get(String key) {
-        log.info("원본 메서드 get 호출");
+        log.info("[원본 메서드] : get 호출");
         return redisTemplate.opsForValue().get(key);
     }
 
     public String fallback(String key, RedisConnectionException e) {
-        log.error("[Fallback: RedisConnectionException] key={}, message={}",
-                key, e.getMessage());
+        log.error("[FALLBACK] : RedisConnectionException : {}", e.getMessage());
         return null;
     }
 
-    public String fallback(String key, Throwable t) {
-        log.error("[Fallback: General Throwable] key={}, message={}",
-                key, t.getMessage());
+    public String fallback(String key, RedisCommandExecutionException e) {
+        log.error("[FALLBACK] : RedisCommandExecutionException : {}", e.getMessage());
+        return null;
+    }
+
+    public String fallback(String key, Exception e) {
+        log.error("[FALLBACK] : RuntimeException : {}", e.getMessage());
         return null;
     }
 
