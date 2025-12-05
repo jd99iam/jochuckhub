@@ -1,8 +1,6 @@
 package com.guenbon.jochuckhub.service.redis;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.lettuce.core.RedisCommandExecutionException;
-import io.lettuce.core.RedisConnectionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -26,20 +24,20 @@ public class RedisManagerV1 implements RedisManager {
         return redisTemplate.opsForValue().get(key);
     }
 
-    public String fallback(String key, RedisConnectionException e) {
-        log.error("[FALLBACK] : RedisConnectionException : {}", e.getMessage());
+    public String fallback(String key) {
+//        log.error("[FALLBACK] : RedisConnectionException : {}", e.getMessage());
         return null;
     }
 
-    public String fallback(String key, RedisCommandExecutionException e) {
-        log.error("[FALLBACK] : RedisCommandExecutionException : {}", e.getMessage());
-        return null;
-    }
-
-    public String fallback(String key, Exception e) {
-        log.error("[FALLBACK] : RuntimeException : {}", e.getMessage());
-        return null;
-    }
+//    public String fallback(String key, RedisCommandExecutionException e) {
+//        log.error("[FALLBACK] : RedisCommandExecutionException : {}", e.getMessage());
+//        return null;
+//    }
+//
+//    public String fallback(String key, Exception e) {
+//        log.error("[FALLBACK] : RuntimeException : {}", e.getMessage());
+//        return null;
+//    }
 
     // 저장 + TTL
     public void set(String key, String value, long ttlSeconds) {

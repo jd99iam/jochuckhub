@@ -60,6 +60,9 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-retry:${resilience4jVersion}")
 
     implementation "org.springframework.boot:spring-boot-starter-actuator"
+
+    // auditing
+    implementation "org.hibernate.orm:hibernate-envers"
 }
 
 tasks.named('test') {
