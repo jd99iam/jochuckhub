@@ -1,8 +1,0 @@
-# Private configuration template
-# Copy this file to application-private.properties and fill in your actual credentials
-# application-private.properties is ignored by git
-
-# MySQL Database Credentials
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-
